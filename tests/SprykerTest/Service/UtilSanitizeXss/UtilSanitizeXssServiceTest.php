@@ -5,7 +5,7 @@
  * Use of this software requires acceptance of the Evaluation License Agreement. See LICENSE file.
  */
 
-namespace Spryker\UtilSanitizeXss\tests\SprykerTest\Service\UtilSanitizeXss;
+namespace SprykerTest\Service\UtilSanitizeXss;
 
 use Codeception\Test\Unit;
 use Spryker\Service\UtilSanitizeXss\UtilSanitizeXssService;
@@ -14,9 +14,6 @@ use Spryker\Service\UtilSanitizeXss\UtilSanitizeXssServiceInterface;
 /**
  * Auto-generated group annotations
  *
- * @group Spryker
- * @group UtilSanitizeXss
- * @group tests
  * @group SprykerTest
  * @group Service
  * @group UtilSanitizeXss
@@ -35,9 +32,6 @@ class UtilSanitizeXssServiceTest extends Unit
      */
     protected const ATTRIBUTE_STYLE = 'style';
 
-    /**
-     * @return void
-     */
     public function testSanitizeXssWillSanitizeScriptTag(): void
     {
         //Arrange
@@ -50,9 +44,6 @@ class UtilSanitizeXssServiceTest extends Unit
         $this->assertSame('', $result);
     }
 
-    /**
-     * @return void
-     */
     public function testSanitizeXssWillSanitizeScriptTagInsideAnotherTag(): void
     {
         //Arrange
@@ -65,9 +56,6 @@ class UtilSanitizeXssServiceTest extends Unit
         $this->assertSame('<span ><b>alert&#40;"Hack"&#41;;</b></span>', $result);
     }
 
-    /**
-     * @return void
-     */
     public function testSanitizeXssWillSanitizeHexEncodedScriptTag(): void
     {
         //Arrange
@@ -80,9 +68,6 @@ class UtilSanitizeXssServiceTest extends Unit
         $this->assertSame('<img  />', $result);
     }
 
-    /**
-     * @return void
-     */
     public function testSanitizeXssWillSanitizeAttributeWithoutRemovingIt(): void
     {
         //Arrange
@@ -95,9 +80,6 @@ class UtilSanitizeXssServiceTest extends Unit
         $this->assertSame('<iframe width="560"  height="315" src="http://some-site"></iframe>', $result);
     }
 
-    /**
-     * @return void
-     */
     public function testSanitizeXssWillSanitizeHtmlTagWithoutRemovingIt(): void
     {
         //Arrange
@@ -162,9 +144,6 @@ class UtilSanitizeXssServiceTest extends Unit
         ];
     }
 
-    /**
-     * @return \Spryker\Service\UtilSanitizeXss\UtilSanitizeXssServiceInterface
-     */
     protected function getUtilSanitizeXssService(): UtilSanitizeXssServiceInterface
     {
         return new UtilSanitizeXssService();

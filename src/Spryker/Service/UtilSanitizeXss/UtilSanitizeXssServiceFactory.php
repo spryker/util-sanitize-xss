@@ -17,9 +17,6 @@ use Spryker\Service\UtilSanitizeXss\Sanitizer\SanitizerInterface;
 
 class UtilSanitizeXssServiceFactory extends AbstractServiceFactory
 {
-    /**
-     * @return \Spryker\Service\UtilSanitizeXss\Sanitizer\SanitizerInterface
-     */
     public function createSanitizer(): SanitizerInterface
     {
         return new Sanitizer(
@@ -39,25 +36,16 @@ class UtilSanitizeXssServiceFactory extends AbstractServiceFactory
         ];
     }
 
-    /**
-     * @return \Spryker\Service\UtilSanitizeXss\Escaper\EscaperInterface
-     */
     public function createTwigFunctionEscaper(): EscaperInterface
     {
         return new TwigFunctionEscaper();
     }
 
-    /**
-     * @return \Spryker\Service\UtilSanitizeXss\Escaper\EscaperInterface
-     */
     public function createCommentEscaper(): EscaperInterface
     {
         return new CommentEscaper();
     }
 
-    /**
-     * @return \Spryker\Service\UtilSanitizeXss\Dependency\External\UtilSanitizeToXssSanitizeInterface
-     */
     public function getXssSanitizer(): UtilSanitizeToXssSanitizeInterface
     {
         return $this->getProvidedDependency(UtilSanitizeXssDependencyProvider::XSS_SANITIZER);

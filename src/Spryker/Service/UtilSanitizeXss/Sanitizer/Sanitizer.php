@@ -49,11 +49,6 @@ class Sanitizer implements SanitizerInterface
         return $this->executeRestore($sanitizedText);
     }
 
-    /**
-     * @param string $text
-     *
-     * @return string
-     */
     protected function executeEscape(string $text): string
     {
         foreach ($this->escapers as $escaper) {
@@ -63,11 +58,6 @@ class Sanitizer implements SanitizerInterface
         return $text;
     }
 
-    /**
-     * @param string $text
-     *
-     * @return string
-     */
     protected function executeRestore(string $text): string
     {
         foreach ($this->escapers as $escaper) {

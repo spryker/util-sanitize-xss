@@ -9,17 +9,7 @@ namespace Spryker\Service\UtilSanitizeXss\Escaper;
 
 interface EscaperInterface
 {
-    /**
-     * @param string $text
-     *
-     * @return string
-     */
     public function escape(string $text): string;
 
-    /**
-     * @param string $text
-     *
-     * @return string
-     */
     public function restore(string $text): string;
 }
