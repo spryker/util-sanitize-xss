@@ -7,6 +7,7 @@
 
 namespace Spryker\Service\UtilSanitizeXss;
 
+use Generated\Shared\Transfer\HtmlSanitizerConfigTransfer;
 use Spryker\Service\Kernel\AbstractService;
 
 /**
@@ -30,5 +31,15 @@ class UtilSanitizeXssService extends AbstractService implements UtilSanitizeXssS
         return $this->getFactory()
             ->createSanitizer()
             ->sanitize($text, $allowedAttributes, $allowedHtmlTags);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @api
+     */
+    public function sanitize(string $text, HtmlSanitizerConfigTransfer $htmlSanitizerConfigTransfer): string
+    {
+        return $this->getFactory()->getHtmlSanitizerAdapter()->sanitize($text, $htmlSanitizerConfigTransfer);
     }
 }

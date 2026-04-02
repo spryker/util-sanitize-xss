@@ -8,6 +8,7 @@
 namespace Spryker\Service\UtilSanitizeXss;
 
 use Spryker\Service\Kernel\AbstractServiceFactory;
+use Spryker\Service\UtilSanitizeXss\Dependency\External\UtilSanitizeToHtmlSanitizerInterface;
 use Spryker\Service\UtilSanitizeXss\Dependency\External\UtilSanitizeToXssSanitizeInterface;
 use Spryker\Service\UtilSanitizeXss\Escaper\CommentEscaper;
 use Spryker\Service\UtilSanitizeXss\Escaper\EscaperInterface;
@@ -49,5 +50,10 @@ class UtilSanitizeXssServiceFactory extends AbstractServiceFactory
     public function getXssSanitizer(): UtilSanitizeToXssSanitizeInterface
     {
         return $this->getProvidedDependency(UtilSanitizeXssDependencyProvider::XSS_SANITIZER);
+    }
+
+    public function getHtmlSanitizerAdapter(): UtilSanitizeToHtmlSanitizerInterface
+    {
+        return $this->getProvidedDependency(UtilSanitizeXssDependencyProvider::HTML_SANITIZER);
     }
 }

@@ -8,6 +8,9 @@
 namespace SprykerTest\Service\UtilSanitizeXss;
 
 use Codeception\Test\Unit;
+use Generated\Shared\Transfer\HtmlSanitizerAllowedAttributeTransfer;
+use Generated\Shared\Transfer\HtmlSanitizerAllowedElementTransfer;
+use Generated\Shared\Transfer\HtmlSanitizerConfigTransfer;
 use Spryker\Service\UtilSanitizeXss\UtilSanitizeXssService;
 use Spryker\Service\UtilSanitizeXss\UtilSanitizeXssServiceInterface;
 
@@ -142,6 +145,230 @@ class UtilSanitizeXssServiceTest extends Unit
                 '<!--  --> <!-- <span ><b>alert&#40;"Hack"&#41;;</b></span> --> <!-- <img  /> -->',
             ],
         ];
+    }
+
+    public function testSanitizeStripsAllHtmlWithEmptyConfig(): void
+    {
+        // Arrange — text nodes directly in the body survive; elements are dropped WITH children (Drop action)
+        $config = new HtmlSanitizerConfigTransfer();
+
+        // Act
+        $result = $this->getUtilSanitizeXssService()->sanitize(
+            'Hello <script>evil()</script> world',
+            $config,
+        );
+
+        // Assert — text nodes survive, <script> and its content are dropped
+        $this->assertSame('Hello  world', $result);
+    }
+
+    public function testSanitizeStripsScriptTagsWithEmptyConfig(): void
+    {
+        // Arrange
+        $config = new HtmlSanitizerConfigTransfer();
+
+        // Act & Assert
+        $this->assertSame('', $this->getUtilSanitizeXssService()->sanitize(
+            "<script>alert('ok');</script>",
+            $config,
+        ));
+    }
+
+    public function testSanitizeStripsNestedScriptTag(): void
+    {
+        // Arrange
+        $config = new HtmlSanitizerConfigTransfer();
+
+        // Act & Assert
+        $this->assertSame('', $this->getUtilSanitizeXssService()->sanitize(
+            '<scr<script>ipt>alert(1)</script>',
+            $config,
+        ));
+    }
+
+    public function testSanitizeAllowsConfiguredElementsWithNoAttributes(): void
+    {
+        // Arrange
+        $config = (new HtmlSanitizerConfigTransfer())
+            ->addAllowedElement(
+                (new HtmlSanitizerAllowedElementTransfer())->setElement('strong')->setAllowedAttributes([]),
+            )
+            ->addAllowedElement(
+                (new HtmlSanitizerAllowedElementTransfer())->setElement('em')->setAllowedAttributes([]),
+            );
+
+        // Act — input has no outer disallowed wrapper so allowed children are not dropped
+        $result = $this->getUtilSanitizeXssService()->sanitize(
+            '<strong class="bold">Bold</strong> and <em>italic</em>',
+            $config,
+        );
+
+        // Assert — elements preserved, class attribute stripped (not in allowed list)
+        $this->assertSame('<strong>Bold</strong> and <em>italic</em>', $result);
+    }
+
+    public function testSanitizeAllowsConfiguredElementsWithSpecificAttributes(): void
+    {
+        // Arrange
+        $config = (new HtmlSanitizerConfigTransfer())
+            ->addAllowedElement(
+                (new HtmlSanitizerAllowedElementTransfer())->setElement('a')->setAllowedAttributes(['href']),
+            );
+
+        // Act
+        $result = $this->getUtilSanitizeXssService()->sanitize(
+            '<a href="https://example.com" class="btn" onclick="evil()">Link</a>',
+            $config,
+        );
+
+        // Assert
+        $this->assertSame('<a href="https://example.com">Link</a>', $result);
+    }
+
+    public function testSanitizeAllowsElementWithAllSafeAttributesViaWildcard(): void
+    {
+        // Arrange
+        $config = (new HtmlSanitizerConfigTransfer())
+            ->addAllowedElement(
+                (new HtmlSanitizerAllowedElementTransfer())->setElement('a')->setAllowedAttributes(['*']),
+            );
+
+        // Act
+        $result = $this->getUtilSanitizeXssService()->sanitize(
+            '<a href="https://example.com" title="Visit">Link</a>',
+            $config,
+        );
+
+        // Assert
+        $this->assertStringContainsString('href="https://example.com"', $result);
+        $this->assertStringContainsString('title="Visit"', $result);
+    }
+
+    public function testSanitizeStripsJavascriptProtocolEvenWhenHrefAllowed(): void
+    {
+        // Arrange
+        $config = (new HtmlSanitizerConfigTransfer())
+            ->addAllowedElement(
+                (new HtmlSanitizerAllowedElementTransfer())->setElement('a')->setAllowedAttributes(['href']),
+            );
+
+        // Act
+        $result = $this->getUtilSanitizeXssService()->sanitize(
+            "<a href=\"javascript:alert('ok')\">Test</a>",
+            $config,
+        );
+
+        // Assert
+        $this->assertSame('<a>Test</a>', $result);
+    }
+
+    public function testSanitizeStripsEventHandlersEvenWithWildcardAttributes(): void
+    {
+        // Arrange
+        $config = (new HtmlSanitizerConfigTransfer())
+            ->addAllowedElement(
+                (new HtmlSanitizerAllowedElementTransfer())->setElement('a')->setAllowedAttributes(['*']),
+            );
+
+        // Act
+        $result = $this->getUtilSanitizeXssService()->sanitize(
+            '<a href="https://example.com" onclick="evil()">Link</a>',
+            $config,
+        );
+
+        // Assert
+        $this->assertStringNotContainsString('onclick', $result);
+        $this->assertStringContainsString('href', $result);
+    }
+
+    public function testSanitizeAllowsSafeElementsBaseline(): void
+    {
+        // Arrange
+        $config = (new HtmlSanitizerConfigTransfer())->setIsAllowSafeElements(true);
+
+        // Act
+        $result = $this->getUtilSanitizeXssService()->sanitize(
+            '<p>Hello <script>evil()</script> <strong>world</strong></p>',
+            $config,
+        );
+
+        // Assert
+        $this->assertStringNotContainsString('<script>', $result);
+        $this->assertStringContainsString('<p>', $result);
+        $this->assertStringContainsString('<strong>world</strong>', $result);
+    }
+
+    public function testSanitizeForcesHttpsUrls(): void
+    {
+        // Arrange
+        $config = (new HtmlSanitizerConfigTransfer())
+            ->setIsForceHttpsUrls(true)
+            ->addAllowedElement(
+                (new HtmlSanitizerAllowedElementTransfer())->setElement('a')->setAllowedAttributes(['href']),
+            );
+
+        // Act
+        $result = $this->getUtilSanitizeXssService()->sanitize(
+            '<a href="http://example.com">Link</a>',
+            $config,
+        );
+
+        // Assert
+        $this->assertSame('<a href="https://example.com">Link</a>', $result);
+    }
+
+    public function testSanitizeAllowsAttributeGloballyViaAllowAttributes(): void
+    {
+        // Arrange
+        $config = (new HtmlSanitizerConfigTransfer())
+            ->addAllowedElement(
+                (new HtmlSanitizerAllowedElementTransfer())->setElement('p')->setAllowedAttributes([]),
+            )
+            ->addAllowedElement(
+                (new HtmlSanitizerAllowedElementTransfer())->setElement('a')->setAllowedAttributes([]),
+            )
+            ->addAllowedAttribute(
+                (new HtmlSanitizerAllowedAttributeTransfer())->setAttribute('class')->setAllowedElements(['*']),
+            );
+
+        // Act
+        $result = $this->getUtilSanitizeXssService()->sanitize(
+            '<p class="lead"><a class="btn">Link</a></p>',
+            $config,
+        );
+
+        // Assert
+        $this->assertSame('<p class="lead"><a class="btn">Link</a></p>', $result);
+    }
+
+    public function testSanitizeStripsStyleTag(): void
+    {
+        // Arrange
+        $config = new HtmlSanitizerConfigTransfer();
+
+        // Act — text node is directly in body (not wrapped in a dropped element)
+        $result = $this->getUtilSanitizeXssService()->sanitize(
+            'Text<style>body { background: red; }</style>',
+            $config,
+        );
+
+        // Assert — plain text survives, <style> element and its content are dropped
+        $this->assertSame('Text', $result);
+    }
+
+    public function testSanitizeStripsHtmlCommentsWithInjection(): void
+    {
+        // Arrange
+        $config = new HtmlSanitizerConfigTransfer();
+
+        // Act
+        $result = $this->getUtilSanitizeXssService()->sanitize(
+            'Lorem ipsum<!--if[true]> <script>alert(1337)</script> -->',
+            $config,
+        );
+
+        // Assert
+        $this->assertSame('Lorem ipsum', $result);
     }
 
     protected function getUtilSanitizeXssService(): UtilSanitizeXssServiceInterface

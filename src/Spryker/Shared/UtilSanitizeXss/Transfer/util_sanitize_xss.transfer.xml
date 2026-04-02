@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<transfers xmlns="spryker:transfer-01" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="spryker:transfer-01 http://static.spryker.com/transfer-01.xsd">
+
+    <transfer name="HtmlSanitizerAllowedElement" strict="true">
+        <property name="element" type="string"/>
+        <property name="allowedAttributes" type="string[]" singular="allowedAttribute"/>
+    </transfer>
+
+    <transfer name="HtmlSanitizerAllowedAttribute" strict="true">
+        <property name="attribute" type="string"/>
+        <property name="allowedElements" type="string[]" singular="allowedElement"/>
+    </transfer>
+
+    <transfer name="HtmlSanitizerConfig" strict="true">
+        <property name="isAllowSafeElements" type="bool"/>
+        <property name="isAllowStaticElements" type="bool"/>
+        <property name="allowedElements" type="HtmlSanitizerAllowedElement[]" singular="allowedElement"/>
+        <property name="allowedAttributes" type="HtmlSanitizerAllowedAttribute[]" singular="allowedAttribute"/>
+        <property name="allowedLinkSchemes" type="string[]" singular="allowedLinkScheme"/>
+        <property name="allowedLinkHosts" type="string[]" singular="allowedLinkHost"/>
+        <property name="isAllowRelativeLinks" type="bool"/>
+        <property name="allowedMediaSchemes" type="string[]" singular="allowedMediaScheme"/>
+        <property name="allowedMediaHosts" type="string[]" singular="allowedMediaHost"/>
+        <property name="isAllowRelativeMedias" type="bool"/>
+        <property name="isForceHttpsUrls" type="bool"/>
+        <property name="maxInputLength" type="int"/>
+    </transfer>
+
+</transfers>

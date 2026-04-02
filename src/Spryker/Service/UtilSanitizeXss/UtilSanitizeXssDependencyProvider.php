@@ -10,6 +10,7 @@ namespace Spryker\Service\UtilSanitizeXss;
 use Spryker\Service\Kernel\AbstractBundleDependencyProvider;
 use Spryker\Service\Kernel\Container;
 use Spryker\Service\UtilSanitizeXss\Dependency\External\UtilSanitizeToAntiXssAdapter;
+use Spryker\Service\UtilSanitizeXss\Dependency\External\UtilSanitizeToSymfonyHtmlSanitizerAdapter;
 
 class UtilSanitizeXssDependencyProvider extends AbstractBundleDependencyProvider
 {
@@ -18,10 +19,16 @@ class UtilSanitizeXssDependencyProvider extends AbstractBundleDependencyProvider
      */
     public const XSS_SANITIZER = 'XSS_SANITIZER';
 
+    /**
+     * @var string
+     */
+    public const HTML_SANITIZER = 'HTML_SANITIZER';
+
     public function provideServiceDependencies(Container $container): Container
     {
         $container = parent::provideServiceDependencies($container);
         $container = $this->addXssSanitizer($container);
+        $container = $this->addHtmlSanitizer($container);
 
         return $container;
     }
@@ -30,6 +37,15 @@ class UtilSanitizeXssDependencyProvider extends AbstractBundleDependencyProvider
     {
         $container->set(static::XSS_SANITIZER, function () {
             return new UtilSanitizeToAntiXssAdapter();
+        });
+
+        return $container;
+    }
+
+    public function addHtmlSanitizer(Container $container): Container
+    {
+        $container->set(static::HTML_SANITIZER, function () {
+            return new UtilSanitizeToSymfonyHtmlSanitizerAdapter();
         });
 
         return $container;
