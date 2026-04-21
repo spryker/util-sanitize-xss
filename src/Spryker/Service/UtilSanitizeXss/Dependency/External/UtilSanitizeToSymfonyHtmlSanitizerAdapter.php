@@ -8,6 +8,7 @@
 namespace Spryker\Service\UtilSanitizeXss\Dependency\External;
 
 use Generated\Shared\Transfer\HtmlSanitizerConfigTransfer;
+use Spryker\Service\UtilSanitizeXss\Parser\NativeHtmlParser;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
 
@@ -16,8 +17,9 @@ class UtilSanitizeToSymfonyHtmlSanitizerAdapter implements UtilSanitizeToHtmlSan
     public function sanitize(string $text, HtmlSanitizerConfigTransfer $htmlSanitizerConfigTransfer): string
     {
         $config = $this->buildHtmlSanitizerConfig($htmlSanitizerConfigTransfer);
+        $parser = \PHP_VERSION_ID >= 80400 ? new NativeHtmlParser() : null;
 
-        return (new HtmlSanitizer($config))->sanitize($text);
+        return (new HtmlSanitizer($config, $parser))->sanitize($text);
     }
 
     protected function buildHtmlSanitizerConfig(HtmlSanitizerConfigTransfer $htmlSanitizerConfigTransfer): HtmlSanitizerConfig
